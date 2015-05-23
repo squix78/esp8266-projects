@@ -1,9 +1,9 @@
 -- your offset to UTC
 local UTC_OFFSET = 2
--- Enter your city, check openweatherchannel.com
+-- Enter your city, check openweathermap.org
 local CITY = "Zurich,ch"
--- Get an APP ID on openweatherchannel.com
-local APPID = "f42c672cab129e0611ceed9f0b23ab4a"
+-- Get an APP ID on openweathermap.org
+local APPID = "YOUR_APP_ID"
 -- Update interval in minutes
 local INTERVAL = 10
 
