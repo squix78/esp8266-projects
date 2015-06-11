@@ -26,3 +26,5 @@ I'm usually a big fan of well structured data. But you have to think differently
 
 If you find any bugs or code with room for improvement please let me know. C/C++ is not my mother tongue...
 The best way to tell me about improvments are pull requests (which is a github feature...).
+
+See a video here: http://blog.squix.ch/2015/06/esp8266-weather-station-v2-code.html
