@@ -1,0 +1,4 @@
+#define inactive_width 8
+#define inactive_height 8
+static unsigned char inactive_bits[] = {
+   0x00, 0x18, 0x24, 0x42, 0x42, 0x24, 0x18, 0x00 };
