@@ -85,7 +85,12 @@ void SSD1306::display(void) {
 
 void SSD1306::setPixel(int x, int y) {
   if (x >= 0 && x < 128 && y >= 0 && y < 64) {
-     buffer[x+ (y/8)*128] |=  (1 << (y&7));
+     
+     switch (myColor) {
+      case WHITE:   buffer[x+ (y/8)*128] |=  (1 << (y&7)); break;
+      case BLACK:   buffer[x+ (y/8)*128] &= ~(1 << (y&7)); break; 
+      case INVERSE: buffer[x+ (y/8)*128] ^=  (1 << (y&7)); break; 
+    }
   }
 }
 
@@ -132,6 +137,30 @@ void SSD1306::drawBitmap(int x, int y, int width, int height, const char *bitmap
       }
     }
   }  
+}
+
+void SSD1306::setColor(int color) {
+  myColor = color;  
+}
+
+void SSD1306::drawRect(int x, int y, int width, int height) {
+  for (int i = x; i < x + width; i++) {
+    setPixel(i, y);
+    setPixel(i, y + height);    
+  }
+  for (int i = y; i < y + height; i++) {
+    setPixel(x, i);
+    setPixel(x + width, i);  
+  }
+}
+
+void SSD1306::fillRect(int x, int y, int width, int height) {
+  for (int i = x; i < x + width; i++) {
+    for (int j = 0; j < y + height; j++) {
+      setPixel(i, j);
+    }
+  }
+
 }
 
 void SSD1306::drawXbm(int x, int y, int width, int height, const char *xbm) {

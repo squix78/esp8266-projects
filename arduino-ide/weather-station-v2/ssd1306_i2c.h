@@ -27,6 +27,11 @@ Credits for parts of this code go to Mike Rankin. Thank you so much for sharing!
 
 #include <Arduino.h>
 
+#define BLACK 0
+#define WHITE 1
+#define INVERSE 2
+
+
 class SSD1306 {
 
 private:
@@ -41,6 +46,7 @@ private:
    int myFrameCount = 0;
    int myFrameWaitTicks = 100;
    int myFrameTransitionTicks = 25;
+   int myColor = WHITE;
    void (**myFrameCallbacks)(int x, int y);
 
    
@@ -61,6 +67,9 @@ public:
    void drawXbm(int x, int y, int width, int height, const char *xbm);
    void sendCommand(unsigned char com);
    void sendInitCommands(void);
+   void setColor(int color);
+   void drawRect(int x, int y, int width, int height);
+   void fillRect(int x, int y, int width, int height);
    
    
    void setFrameCallbacks(int frameCount, void (*frameCallbacks[])(int x, int y));

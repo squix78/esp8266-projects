@@ -89,6 +89,9 @@ void setup() {
     Serial.print(".");
     display.clear();
     display.drawXbm(34,10, 60, 36, WiFi_Logo_bits);
+    display.setColor(INVERSE);
+    display.fillRect(10, 10, 108, 44);
+    display.setColor(WHITE);
     drawSpinner(3, counter % 3);
     display.display();
     counter++;
