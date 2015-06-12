@@ -69,7 +69,7 @@ void SSD1306::display(void) {
 
     for (uint16_t i=0; i<(128*64/8); i++) {
       // send a bunch of data in one xmission
-      Wire.begin(mySda, mySdc);
+      //Wire.begin(mySda, mySdc);
       Wire.beginTransmission(myI2cAddress);
       Wire.write(0x40);
       for (uint8_t x=0; x<16; x++) {
@@ -182,7 +182,7 @@ void SSD1306::drawXbm(int x, int y, int width, int height, const char *xbm) {
 
 void SSD1306::sendCommand(unsigned char com)
 {
-  Wire.begin(mySda, mySdc);
+  //Wire.begin(mySda, mySdc);
   Wire.beginTransmission(myI2cAddress);     //begin transmitting
   Wire.write(0x80);                          //command mode
   Wire.write(com);
