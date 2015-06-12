@@ -14,7 +14,7 @@ of forecast.io.
 
 This class interfaces with the display over the I2C bus. Please be aware that I set the bus speed relatively 
 high, in order to have faster refreshes of the display. It can happen that for some reason this value is 
-too high for your setup. Then you'd have to experiment with different values
+too high for your setup. Then you'd have to experiment with different values. This class is based on code from @mikerankin. Thank you a lot, Mike for deciphering the datasheets!
 
 ## WeatherClient
 
@@ -26,5 +26,8 @@ I'm usually a big fan of well structured data. But you have to think differently
 
 If you find any bugs or code with room for improvement please let me know. C/C++ is not my mother tongue...
 The best way to tell me about improvments are pull requests (which is a github feature...).
+
+The weather icons are from http://www.alessioatzeni.com/meteocons/
+Alessio is accepting donations for his work
 
 See a video here: http://blog.squix.ch/2015/06/esp8266-weather-station-v2-code.html
