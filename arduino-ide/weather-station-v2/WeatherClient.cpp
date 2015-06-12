@@ -35,7 +35,7 @@ void WeatherClient::updateWeatherData(String apiKey, double lat, double lon) {
   }
   
   // We now create a URI for the request
-  String url = "/rest/weather?apiKey=" + apiKey + "&lat=" + String(lat) + "&lon=" + String(lon);
+  String url = "/rest/weather?apiKey=" + apiKey + "&lat=" + String(lat) + "&lon=" + String(lon) + "&units=" + myUnits;
   
   Serial.print("Requesting URL: ");
   Serial.println(url);
@@ -89,6 +89,10 @@ void WeatherClient::updateWeatherData(String apiKey, double lat, double lon) {
   
   Serial.println();
   Serial.println("closing connection");    
+}
+
+void WeatherClient::setUnits(String units) {
+   myUnits = units; 
 }
 
 String WeatherClient::getKey(String line) {

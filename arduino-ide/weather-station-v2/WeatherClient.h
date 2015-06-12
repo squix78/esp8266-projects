@@ -40,12 +40,15 @@ class WeatherClient {
     String iconTomorrow;
     String summaryTomorrow;
     String apiKey;
+    String myUnits = "auto";
+    String myLanguage;
     
     String getValue(String line);
     String getKey(String line);
   
   public:
     void updateWeatherData(String apiKey, double lat, double lon); 
+    void setUnits(String units);
     int getCurrentTemp(void);
     int getCurrentHumidity(void);
     String getCurrentIcon(void);
