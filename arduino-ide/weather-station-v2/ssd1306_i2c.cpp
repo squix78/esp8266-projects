@@ -65,6 +65,15 @@ void SSD1306::displayOff(void)
   sendCommand(0xae);		//display off
 }
 
+void SSD1306::setContrast(char contrast) {
+  sendCommand(0x81);
+  sendCommand(contrast);  
+}
+void SSD1306::flipScreenVertically() {
+  sendCommand(0xA0 | 0x1);      //SEGREMAP   //Rotate screen 180 deg
+  
+  sendCommand(0xC8);            //COMSCANDEC  Rotate screen 180 Deg
+}
 void SSD1306::clear(void) {
     memset(buffer, 0, (128*64 / 8));
 }

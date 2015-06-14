@@ -72,6 +72,9 @@ public:
    void drawRect(int x, int y, int width, int height);
    void fillRect(int x, int y, int width, int height);
    
+   void setContrast(char contrast);
+   void flipScreenVertically();
+   
    
    void setFrameCallbacks(int frameCount, void (*frameCallbacks[])(int x, int y));
    void nextFrameTick(void);
