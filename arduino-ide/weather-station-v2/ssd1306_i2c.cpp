@@ -40,15 +40,19 @@ void SSD1306::init() {
   Wire.begin(mySda, mySdc);
   Wire.setClock(400000); 
   sendInitCommands();
-  reset_display();
+  resetDisplay();
 }
 
-void SSD1306::reset_display(void)
+void SSD1306::resetDisplay(void)
 {
   displayOff();
   clear();
   display();
   displayOn();
+}
+
+void SSD1306::reconnect() {
+  Wire.begin(mySda, mySdc);  
 }
 
 void SSD1306::displayOn(void)

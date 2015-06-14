@@ -54,7 +54,8 @@ public:
    // Empty constructor
    SSD1306(int i2cAddress, int sda, int sdc);
    void init();
-   void reset_display(void);
+   void resetDisplay(void);
+   void reconnect(void);
    void displayOn(void);
    void displayOff(void);
    void clear(void);
