@@ -28,7 +28,9 @@ void setup() {
       String line = f.readStringUntil('\n');
       Serial.println(line);
     }
+
   }
+  file.close();
 }
 
 void loop() {
