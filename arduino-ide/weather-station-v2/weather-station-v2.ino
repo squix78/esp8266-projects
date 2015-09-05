@@ -1,3 +1,5 @@
+#include <DHT.h>
+
 /**The MIT License (MIT)
 
 Copyright (c) 2015 by Daniel Eichhorn
@@ -25,49 +27,68 @@ See more at http://blog.squix.ch
 
 #include <Wire.h>
 #include <Ticker.h>
+
 #include "ssd1306_i2c.h"
 #include "icons.h"
-
-
 #include <ESP8266WiFi.h>
 #include "WeatherClient.h"
 
+#define DHTTYPE DHT22
+#define DHTPIN  4
+
+// Initialize DHT sensor 
+// NOTE: For working with a faster than ATmega328p 16 MHz Arduino chip, like an ESP8266,
+// you need to increase the threshold for cycle counts considered a 1 or 0.
+// You can do this by passing a 3rd parameter for this threshold.  It's a bit
+// of fiddling to find the right value, but in general the faster the CPU the
+// higher the value.  The default for a 16mhz AVR is a value of 6.  For an
+// Arduino Due that runs at 84mhz a value of 30 works.
+// This is for the ESP8266 processor on ESP-01 
+DHT dht(DHTPIN, DHTTYPE, 11); // 11 works fine for ESP8266
+float humidity, temp_f;  // Values read from sensor
+unsigned long previousMillis = 0;        // will store last temp was read
+const long interval = 2000;              // interval at which to read sensor
+
 // Initialize the oled display for address 0x3c
-// sda-pin=14 and sdc-pin=12
-SSD1306 display(0x3c, 14, 12);
+// sda-pin=0 and sdc-pin=2
+SSD1306 display(0x3c, 0, 2);
 WeatherClient weather;
 Ticker ticker;
 
 // this array keeps function pointers to all frames
 // frames are the single views that slide from right to left
-void (*frameCallbacks[3])(int x, int y) = {drawFrame1, drawFrame2, drawFrame3};
+void (*frameCallbacks[4])(int x, int y) = {drawFrame1, drawFrame2, drawFrame3, drawFrame4};
 
 // how many frames are there?
-int frameCount = 3;
+int frameCount = 4;
 // on frame is currently displayed
 int currentFrame = 0;
 
 // your network SSID (name)
-char ssid[] = "<SSID>";
+char ssid[] = "AdyShan";
 // your network password
-char pass[] = "<PWD>";  
+char pass[] = "aditya1tannu2";  
 
 // Go to forecast.io and register for an API KEY
-String forecastApiKey = "<YOUR_API_KEY>";
+String forecastApiKey = "51a65846eba22ea29bf003366702ef20";
 
 // Coordinates of the place you want
 // weather information for
-double latitude = 47.3;
-double longitude = 8.5;
+double latitude = 34.4274;
+double longitude = -118.5458;
 
 // flag changed in the ticker function every 10 minutes
 bool readyForWeatherUpdate = true;
 
 void setup() {
+
+  dht.begin();           // initialize temperature sensor
+
+  
   // initialize dispaly
   display.init();
   // set the drawing functions
-  display.setFrameCallbacks(3, frameCallbacks);
+  display.setFrameCallbacks(4, frameCallbacks);
   // how many ticks does a slide of frame take?
   display.setFrameTransitionTicks(10);
 
@@ -89,10 +110,10 @@ void setup() {
     Serial.print(".");
     display.clear();
     display.drawXbm(34,10, 60, 36, WiFi_Logo_bits);
-    display.setColor(INVERSE);
+    display.setColor(WHITE);
     display.fillRect(10, 10, 108, 44);
     display.setColor(WHITE);
-    drawSpinner(3, counter % 3);
+    drawSpinner(4, counter % 4);
     display.display();
     counter++;
   }
@@ -109,9 +130,14 @@ void setup() {
 
 void loop() {
   if (readyForWeatherUpdate && display.getFrameState() == display.FRAME_STATE_FIX) {
+    gettemperature();       // read sensor  
+
+    
     readyForWeatherUpdate = false;
-    weather.setUnits("si");
-    weather.updateWeatherData(forecastApiKey, latitude, longitude);  
+    weather.setUnits("us");
+    weather.updateWeatherData(forecastApiKey, latitude, longitude);
+
+    
   }
   display.clear();
   display.nextFrameTick();
@@ -120,14 +146,6 @@ void loop() {
 
 void setReadyForWeatherUpdate() {
   readyForWeatherUpdate = true;  
-}
-
-void drawFrame1(int x, int y) {
-   display.setFontScale2x2(false);
-   display.drawString(65 + x, 8 + y, "Now");
-   display.drawXbm(x+7,y+7, 50, 50, getIconFromString(weather.getCurrentIcon()));
-   display.setFontScale2x2(true);
-   display.drawString(64+ x, 20 + y, String(weather.getCurrentTemp()) + "C"); 
 }
 
 const char* getIconFromString(String icon) {
@@ -156,23 +174,41 @@ const char* getIconFromString(String icon) {
   return cloudy_bits;
 }
 
-void drawFrame2(int x, int y) {
+void drawFrame1(int x, int y) {
    display.setFontScale2x2(false);
-   display.drawString(65 + x, 0 + y, "Today");
+   display.drawString(65 + x, 0 + y, "Weather");
    display.drawXbm(x,y, 60, 60, xbmtemp);
    display.setFontScale2x2(true);
-   display.drawString(64 + x, 14 + y, String(weather.getCurrentTemp()) + "C");
+   display.drawString(64 + x, 14 + y, String(weather.getCurrentTemp()) + "F");
    display.setFontScale2x2(false);
-   display.drawString(66 + x, 40 + y, String(weather.getMinTempToday()) + "C/" + String(weather.getMaxTempToday()) + "C");  
+   display.drawString(66 + x, 40 + y, String(weather.getMinTempToday()) + "F/" + String(weather.getMaxTempToday()) + "F");  
+}
 
+void drawFrame2(int x, int y) {
+   display.setFontScale2x2(false);
+   display.drawString(65 + x, 8 + y, "Inside");
+   display.drawXbm(x+7,y+7, 50, 50, getIconFromString(weather.getCurrentIcon()));
+   display.setFontScale2x2(true);
+   display.drawString(64+ x, 20 + y, String((int)temp_f) + "F");
+   display.setFontScale2x2(false);
+   display.drawString(104+ x, 50 + y, String((int)humidity) + "%"); 
+      
 }
 
 void drawFrame3(int x, int y) {
+   display.setFontScale2x2(false);
+   display.drawString(65 + x, 8 + y, "Outside");
+   display.drawXbm(x+7,y+7, 50, 50, getIconFromString(weather.getCurrentIcon()));
+   display.setFontScale2x2(true);
+   display.drawString(64+ x, 20 + y, String(weather.getCurrentTemp()) + "F"); 
+}
+
+void drawFrame4(int x, int y) {
    display.drawXbm(x+7,y+7, 50, 50, getIconFromString(weather.getIconTomorrow()));
    display.setFontScale2x2(false);
    display.drawString(65 + x, 7 + y, "Tomorrow");
    display.setFontScale2x2(true);
-   display.drawString(64+ x, 20 + y, String(weather.getMaxTempTomorrow()) + "C");     
+   display.drawString(64+ x, 20 + y, String(weather.getMaxTempTomorrow()) + "F");     
 }
 
 void drawSpinner(int count, int active) {
@@ -185,5 +221,29 @@ void drawSpinner(int count, int active) {
     }
     display.drawXbm(64 - (12 * count / 2) + 12 * i,56, 8, 8, xbm);
   }   
+}
+
+
+void gettemperature() {
+  // Wait at least 2 seconds seconds between measurements.
+  // if the difference between the current time and last time you read
+  // the sensor is bigger than the interval you set, read the sensor
+  // Works better than delay for things happening elsewhere also
+  unsigned long currentMillis = millis();
+ 
+  if(currentMillis - previousMillis >= interval) {
+    // save the last time you read the sensor 
+    previousMillis = currentMillis;   
+
+    // Reading temperature for humidity takes about 250 milliseconds!
+    // Sensor readings may also be up to 2 seconds 'old' (it's a very slow sensor)
+    humidity = dht.readHumidity();          // Read humidity (percent)
+    temp_f = dht.readTemperature(true);     // Read temperature as Fahrenheit
+    // Check if any reads failed and exit early (to try again).
+    if (isnan(humidity) || isnan(temp_f)) {
+      Serial.println("Failed to read from DHT sensor!");
+      return;
+    }
+  }
 }
 
