@@ -110,6 +110,7 @@ void setup() {
 void loop() {
   if (readyForWeatherUpdate && display.getFrameState() == display.FRAME_STATE_FIX) {
     readyForWeatherUpdate = false;
+    weather.setUnits("si");
     weather.updateWeatherData(forecastApiKey, latitude, longitude);  
   }
   display.clear();
