@@ -65,12 +65,12 @@ int frameCount = 4;
 int currentFrame = 0;
 
 // your network SSID (name)
-char ssid[] = "AdyShan";
+char ssid[] = "*****";
 // your network password
-char pass[] = "aditya1tannu2";  
+char pass[] = "*****";  
 
 // Go to forecast.io and register for an API KEY
-String forecastApiKey = "51a65846eba22ea29bf003366702ef20";
+String forecastApiKey = "******";
 
 // Coordinates of the place you want
 // weather information for
