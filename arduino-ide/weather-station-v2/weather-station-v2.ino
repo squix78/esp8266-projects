@@ -1,6 +1,7 @@
 /**The MIT License (MIT)
 
 Copyright (c) 2015 by Daniel Eichhorn
+Copyright (c) 2016 by Erdem Umut Altinyurt
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,15 +29,37 @@ See more at http://blog.squix.ch
 #include "ssd1306_i2c.h"
 #include "icons.h"
 
-
 #include <ESP8266WiFi.h>
-#include "WeatherClient.h"
+#include "ForecastIOParser.h"
 
 // Initialize the oled display for address 0x3c
 // sda-pin=14 and sdc-pin=12
 SSD1306 display(0x3c, 14, 12);
-WeatherClient weather;
+extern ForecastIO forecast;
 Ticker ticker;
+
+// your network SSID (name)
+char ssid[] = "<SSID>";
+// your network password
+char pass[] = "<PASSWORD>";  
+
+// Go to forecast.io and register for an API KEY
+String forecastApiKey = "<APIKEY>";
+
+// Use celsius by default, set 0 for fahrenheit
+#define UNIT_CELSIUS 1
+
+// Coordinates of the place you want
+// weather information for Istanbul
+double latitude = 40.98;
+double longitude = 28.86;
+
+void drawFrame1(int x, int y);
+void drawFrame2(int x, int y);
+void drawFrame3(int x, int y);
+void drawSpinner(int count, int active);
+void setReadyForWeatherUpdate();
+const char* getIconFromString(String icon);
 
 // this array keeps function pointers to all frames
 // frames are the single views that slide from right to left
@@ -47,25 +70,14 @@ int frameCount = 3;
 // on frame is currently displayed
 int currentFrame = 0;
 
-// your network SSID (name)
-char ssid[] = "<SSID>";
-// your network password
-char pass[] = "<PWD>";  
-
-// Go to forecast.io and register for an API KEY
-String forecastApiKey = "<YOUR_API_KEY>";
-
-// Coordinates of the place you want
-// weather information for
-double latitude = 47.3;
-double longitude = 8.5;
-
 // flag changed in the ticker function every 10 minutes
 bool readyForWeatherUpdate = true;
 
 void setup() {
   // initialize dispaly
   display.init();
+  // For some users
+  //display.flipScreenVertically();
   // set the drawing functions
   display.setFrameCallbacks(3, frameCallbacks);
   // how many ticks does a slide of frame take?
@@ -84,7 +96,32 @@ void setup() {
   WiFi.begin(ssid, pass);
   
   int counter = 0;
+  int heartbeat=1;
+  int heartspeed=+15;
   while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    display.clear();
+    display.drawXbm(34, 10, 60, 36, WiFi_Logo_bits);
+    //display.setColor(INVERSE);
+    //display.fillRect(10, 10, 108, 44);
+    //display.setColor(WHITE);
+    display.setContrast(heartbeat%256);
+    heartbeat+=heartspeed;
+    if(heartbeat > 255){
+      heartspeed*=-1;
+      heartbeat=255;
+      }
+    else if(heartbeat <1){
+      heartspeed*=-1;
+      heartbeat=1;
+    }
+    display.drawString(27, 50 , "Connecting" );
+
+    //drawSpinner(3, counter % 3);
+    display.display();
+    delay(5);
+    counter++;
+    /*
     delay(500);
     Serial.print(".");
     display.clear();
@@ -95,7 +132,10 @@ void setup() {
     drawSpinner(3, counter % 3);
     display.display();
     counter++;
+    */
   }
+  display.setContrast(0);//Power Save and keep oleds from burning.
+
   Serial.println("");
   
   Serial.println("WiFi connected");
@@ -110,7 +150,7 @@ void setup() {
 void loop() {
   if (readyForWeatherUpdate && display.getFrameState() == display.FRAME_STATE_FIX) {
     readyForWeatherUpdate = false;
-    weather.updateWeatherData(forecastApiKey, latitude, longitude);  
+    forecast.updateWeatherData(forecastApiKey, latitude, longitude);  
   }
   display.clear();
   display.nextFrameTick();
@@ -119,14 +159,6 @@ void loop() {
 
 void setReadyForWeatherUpdate() {
   readyForWeatherUpdate = true;  
-}
-
-void drawFrame1(int x, int y) {
-   display.setFontScale2x2(false);
-   display.drawString(65 + x, 8 + y, "Now");
-   display.drawXbm(x+7,y+7, 50, 50, getIconFromString(weather.getCurrentIcon()));
-   display.setFontScale2x2(true);
-   display.drawString(64+ x, 20 + y, String(weather.getCurrentTemp()) + "C"); 
 }
 
 const char* getIconFromString(String icon) {
@@ -155,23 +187,42 @@ const char* getIconFromString(String icon) {
   return cloudy_bits;
 }
 
-void drawFrame2(int x, int y) {
-   display.setFontScale2x2(false);
-   display.drawString(65 + x, 0 + y, "Today");
-   display.drawXbm(x,y, 60, 60, xbmtemp);
-   display.setFontScale2x2(true);
-   display.drawString(64 + x, 14 + y, String(weather.getCurrentTemp()) + "C");
-   display.setFontScale2x2(false);
-   display.drawString(66 + x, 40 + y, String(weather.getMinTempToday()) + "C/" + String(weather.getMaxTempToday()) + "C");  
+String unitConv( String fahrenheit ){
+  float fvar = fahrenheit.toFloat();
+  int val = fvar;
+  if( UNIT_CELSIUS )
+    val = (fvar-32)/1.8 ; //that deletes floating point
+  String ret(val);
+  ret+= UNIT_CELSIUS ? "C":"F";
+  return ret;
+  }
 
+void drawFrame1(int x, int y) {
+  display.setFontScale2x2(false);
+  display.drawString(65 + x, 8 + y, "Now");
+  display.drawXbm(x + 7, y + 7, 50, 50, getIconFromString( forecast.current.icon ));
+  display.setFontScale2x2(true);
+  display.drawString(64 + x, 20 + y, unitConv(forecast.current.temperature) );
+  display.setFontScale2x2(false);
+  display.drawString(64 + x, 40 + y, forecast.current.summary);
+}
+
+void drawFrame2(int x, int y) {
+  display.setFontScale2x2(false);
+  display.drawString(65 + x, 0 + y, "Today");
+  display.drawXbm(x, y, 60, 60, xbmtemp);
+  display.setFontScale2x2(true);
+  display.drawString(64 + x, 14 + y, unitConv(forecast.current.temperature) );
+  display.setFontScale2x2(false);
+  display.drawString(66 + x, 40 + y, unitConv( forecast.today.temperatureMin) + "/" + unitConv(forecast.today.temperatureMax) );
 }
 
 void drawFrame3(int x, int y) {
-   display.drawXbm(x+7,y+7, 50, 50, getIconFromString(weather.getIconTomorrow()));
-   display.setFontScale2x2(false);
-   display.drawString(65 + x, 7 + y, "Tomorrow");
-   display.setFontScale2x2(true);
-   display.drawString(64+ x, 20 + y, String(weather.getMaxTempTomorrow()) + "C");     
+  display.drawXbm(x + 7, y + 7, 50, 50, getIconFromString(forecast.tomorrow.icon) );
+  display.setFontScale2x2(false);
+  display.drawString(65 + x, 7 + y, "Tomorrow");
+  display.setFontScale2x2(true);
+  display.drawString(64 + x, 20 + y, unitConv(forecast.tomorrow.temperatureMax) );
 }
 
 void drawSpinner(int count, int active) {

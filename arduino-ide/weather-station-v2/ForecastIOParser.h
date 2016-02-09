@@ -1,6 +1,6 @@
 /**The MIT License (MIT)
-
-Copyright (c) 2015 by Daniel Eichhorn
+ESP8622 Weather Display v3
+Copyright (c) 2016 by Erdem Umut Altinyurt
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,47 +20,44 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-See more at http://blog.squix.ch
 */
 
-#include <Arduino.h>
+#pragma once
 
-class WeatherClient {
-  private:
-    int currentTemp;
-    int currentHumidity;
-    String currentIcon;
-    String currentSummary;
-    String iconToday;
-    int maxTempToday;
-    int minTempToday;
-    String summaryToday;
-    int maxTempTomorrow;
-    int minTempTomorrow;
-    String iconTomorrow;
-    String summaryTomorrow;
-    String apiKey;
-    String myUnits = "auto";
-    String myLanguage;
-    
-    String getValue(String line);
-    String getKey(String line);
-  
+#include "JsonListener.h"
+
+struct weatherData{
+  String temperatureMin;
+  String temperatureMax;
+  String humidity;
+  String temperature;
+  String icon;
+  String summary;
+  };
+
+class ForecastIO: public JsonListener {
   public:
-    void updateWeatherData(String apiKey, double lat, double lon); 
-    void setUnits(String units);
-    int getCurrentTemp(void);
-    int getCurrentHumidity(void);
-    String getCurrentIcon(void);
-    String getCurrentSummary(void);
-    String getIconToday(void);
-    int getMaxTempToday(void);
-    int getMinTempToday(void);
-    String getSummaryToday(void);
-    int getMaxTempTomorrow(void);
-    int getMinTempTomorrow(void);
-    String getIconTomorrow(void);
-    String getSummaryTomorrow(void);
-    
-  
+    ForecastIO();
+    void updateWeatherData( String apiKey, double lat, double lon);
+
+  public:
+    virtual void whitespace(char c);
+    virtual void startDocument();
+    virtual void key(String key);
+    virtual void value(String value);
+    virtual void endArray();
+    virtual void endObject();
+    virtual void endDocument();
+    virtual void startArray();
+    virtual void startObject();
+
+  struct weatherData current, today, tomorrow;
+      
+  private:
+    String apiKey;
+    String token;
+    String object;
+    int arraynum;
 };
+
+
