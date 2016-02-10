@@ -67,7 +67,8 @@ void ForecastIO::updateWeatherData( String apiKey, double lat, double lon) {
         if(size) {
           // read up to 128 byte
           int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
-
+          //Serial.write(buff,c);
+          //Serial.println();
           for(int i=0;i<c;i++)
             parser.parse(buff[i]); 
 
@@ -76,24 +77,38 @@ void ForecastIO::updateWeatherData( String apiKey, double lat, double lon) {
           }
         delay(1);
         }
-      /*
+      
       Serial.println();
       Serial.println( "Current");
-      Serial.println( listener.current.temperature );
-      Serial.println( listener.current.humidity );
-      Serial.println( listener.current.icon );
-      Serial.println( listener.current.summary );
+      Serial.print( "Temperature: ");
+      Serial.println( forecast.current.temperature );
+      Serial.print( "Humidity   : ");
+      Serial.println( forecast.current.humidity );
+      Serial.print( "Icon       : ");
+      Serial.println( forecast.current.icon );
+      Serial.print( "Summary    : ");
+      Serial.println( forecast.current.summary );
+      Serial.println();
       Serial.println( "Today");
-      Serial.println( listener.today.temperatureMin );
-      Serial.println( listener.today.temperatureMax );
-      Serial.println( listener.today.icon );
-      Serial.println( listener.today.summary );
+      Serial.print( "TemperatureMin: ");
+      Serial.println( forecast.today.temperatureMin );
+      Serial.print( "TemperatureMax: ");
+      Serial.println( forecast.today.temperatureMax );
+      Serial.print( "Icon          : ");
+      Serial.println( forecast.today.icon );
+      Serial.print( "Summary       : ");
+      Serial.println( forecast.today.summary );
+      Serial.println();
       Serial.println( "Tomorrow");
-      Serial.println( listener.tomorrow.temperatureMin );
-      Serial.println( listener.tomorrow.temperatureMax );
-      Serial.println( listener.tomorrow.icon );
-      Serial.println( listener.tomorrow.summary );
-      */
+      Serial.print( "TemperatureMin: ");
+      Serial.println( forecast.tomorrow.temperatureMin );
+      Serial.print( "TemperatureMax: ");
+      Serial.println( forecast.tomorrow.temperatureMax );
+      Serial.print( "Icon          : ");
+      Serial.println( forecast.tomorrow.icon );
+      Serial.print( "Summary       : ");
+      Serial.println( forecast.tomorrow.summary );
+      
       Serial.println();
       Serial.print("[HTTP] connection closed or file end.\n");
       }
@@ -106,8 +121,6 @@ void ForecastIO::updateWeatherData( String apiKey, double lat, double lon) {
   Serial.println();
   Serial.println("closing connection");    
 }
-
-
 
 void ForecastIO::whitespace(char c) {
   //Serial.println("whitespace");
@@ -169,7 +182,7 @@ void ForecastIO::startArray() {
 void ForecastIO::startObject() {
    //Serial.println("start object. ");
    arraynum++;
-   if( token == "currently" || token == "daily" )
+   if( token == "currently" || token == "daily" || token == "hourly")
       object=token;
    }
 
