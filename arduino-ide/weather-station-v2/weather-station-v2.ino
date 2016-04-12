@@ -32,6 +32,14 @@ See more at http://blog.squix.ch
 #include <ESP8266WiFi.h>
 #include "WeatherClient.h"
 
+//function declarations
+void drawFrame1(int x, int y) ;
+void drawFrame2(int x, int y) ;
+void drawFrame3(int x, int y) ;
+void drawSpinner(int count, int active);
+void setReadyForWeatherUpdate() ;
+const char* getIconFromString(String icon) ;
+
 // Initialize the oled display for address 0x3c
 // sda-pin=14 and sdc-pin=12
 SSD1306 display(0x3c, 14, 12);
