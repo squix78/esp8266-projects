@@ -30,7 +30,7 @@ void setup() {
     }
 
   }
-  file.close();
+  f.close();
 }
 
 void loop() {
